@@ -14,7 +14,7 @@ setuptools.setup(
     version="0.1",
     author="Kasper Munch",
     author_email="kaspermunch@birc.au.dk",
-    description="Short description",
+    description="Lightweight system for citing papers and making a reference list in jupyter",
     long_description=long_description,
     long_description_content_type="text/markdown",
     url=f'https://github.com/kaspermunch/{package_name}',
@@ -24,7 +24,7 @@ setuptools.setup(
     #     'console_scripts': [f'commaneline_name={package_name}.function_name',
     #                         f'other_commaneline_name={package_name}.other_function_name']
     # },
-    python_requires='>=3.6',
+    python_requires='>=3.7',
     install_requires=[
         #   'numpy>=1.1',
     ])
