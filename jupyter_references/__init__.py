@@ -58,17 +58,17 @@ def incite(cb=None):
         else:
             print('clipboard is not bibtex:', cb)
         
-def reflist(file_name=None):
+def reflist(file_base_name=None):
     regex = re.compile(r'\d+\s+"([^"]+)"')
     references = {}
-    if file_name is None:
-        file_name = os.path.abspath(ipynbname.name()+'.ipynb')
-    if type(file_name) is not list:
-        file_names = [file_name]
+    if file_base_name is None:
+        file_base_name = ipynbname.name()
+    if type(file_base_name) is not list:
+        file_base_names = [file_base_name]
     else:
-        file_names = file_name
-    for file_name in file_names:
-        with open(file_name) as f:
+        file_base_names = file_base_name
+    for name in file_base_names:
+        with open(os.path.abspath(name+'.ipynb')) as f:
             notebook_json = json.load(f)
         for cell in notebook_json['cells']:
             if cell['cell_type'] == 'markdown':
