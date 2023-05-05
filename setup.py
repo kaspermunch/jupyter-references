@@ -11,7 +11,7 @@ package_name = path.basename(this_directory)
 
 setuptools.setup(
     name=package_name,
-    version="0.1",
+    version="0.4",
     author="Kasper Munch",
     author_email="kaspermunch@birc.au.dk",
     description="Lightweight system for citing papers and making a reference list in jupyter",
@@ -26,5 +26,6 @@ setuptools.setup(
     # },
     python_requires='>=3.7',
     install_requires=[
-        #   'numpy>=1.1',
+        'ipynbname',
+        'jupyterlab>=3.0'
     ])

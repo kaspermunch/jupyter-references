@@ -1,2 +1,2 @@
 ipynbname
-ipython
+jupyterlab>=3.0
