@@ -1,5 +1,6 @@
         
 import os
+import sys
 import ipynbname
 import json
 import re
@@ -58,7 +59,11 @@ def incite(cb=None):
         else:
             print('clipboard is not bibtex:', cb)
         
-def reflist(file_base_name=None):
+
+def ref_format_callback(i, ref):
+    return f"{i}. {ref['author']}, {ref['year']}, _{ref['title']}_, [{ref['doi']}](https://doi.org/{ref['doi'].replace('DOI:', '')})"
+
+def reflist(file_base_name=None, format_fun=ref_format_callback):
     regex = re.compile(r'\d+\s+"([^"]+)"')
     references = {}
     if file_base_name is None:
@@ -74,14 +79,18 @@ def reflist(file_base_name=None):
             if cell['cell_type'] == 'markdown':
                 source = ''.join(cell['source'])
                 for ref in regex.findall(source):
-                    author, year, title, doi = ref.split('\n')
-                    references[ref] = dict(author=author.strip(),
-                                        year=year.strip(), 
-                                        title=title.strip(),
-                                        doi=doi.strip())
+                    try:
+                        author, year, title, doi = ref.split('\n')
+                        references[ref] = dict(author=author.strip(),
+                                            year=year.strip(), 
+                                            title=title.strip(),
+                                            doi=doi.strip())
+                    except ValueError:
+                        print(f'Skipping invalid ref: {ref}', file=sys.stderr)
+
     lst = []
     for i, (key, ref) in enumerate(sorted(references.items())):
-        lst.append(f"{i+1}. {ref['author']}, {ref['year']}, _{ref['title']}_, [{ref['doi']}](https://doi.org/{ref['doi'].replace('DOI:', '')})")
+        lst.append(format_fun(i+1, ref))
     content = "\n".join(lst)
     content = '## References\n\n' + content
     get_ipython().run_line_magic('replace_content', f"{content}") 

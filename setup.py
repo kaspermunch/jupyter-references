@@ -11,7 +11,7 @@ package_name = path.basename(this_directory)
 
 setuptools.setup(
     name=package_name,
-    version="0.5",
+    version="0.6",
     author="Kasper Munch",
     author_email="kaspermunch@birc.au.dk",
     description="Lightweight system for citing papers and making a reference list in jupyter",
