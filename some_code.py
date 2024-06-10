@@ -10,6 +10,14 @@ from IPython.core.magic import Magics, magics_class, line_magic
 import bibtexparser
 from thefuzz import fuzz, process
 
+class left:
+    def __rlshift__(self, df):
+        "Left align columns of data frame: df << left()"
+        left_aligned_df = df.style.set_properties(**{'text-align': 'left'})
+        left_aligned_df = left_aligned_df.set_table_styles(
+        [dict(selector = 'th', props=[('text-align', 'left')])])
+        display(left_aligned_df)  
+        
 @magics_class
 class MyMagics(Magics):
     
@@ -78,12 +86,17 @@ def sort_fun(ref):
     return ref['author']
     
     
-def reflist(file_base_name=None, format_fun=ref_format_callback, sort_fun=sort_fun):
+def reflist(file_base_name=None, ref_file_name='readcube.json', format_fun=ref_format_callback, sort_fun=sort_fun):
 
-    with open('bibtex.bib') as bibtex_file:
-        db = bibtexparser.load(bibtex_file)
+    with open(ref_file_name) as f:
+        if ref_file_name.endswith('.bib'):
+            ref_entries = bibtexparser.load(f).entries
+        elif ref_file_name.endswith('.json'):
+            ref_entries = json.load(f)['items']
+        else:
+            assert 0
         bib_database = {}
-        for entry in db.entries:
+        for entry in ref_entries:
             bib_database[entry['ID']] = entry
 
     regex = re.compile(r'https://doi.org/(\S+)\s+"')
@@ -121,5 +134,52 @@ def reflist(file_base_name=None, format_fun=ref_format_callback, sort_fun=sort_f
     content = "\n".join(ref_list)
     get_ipython().run_line_magic('replace_content', f"{content}") 
             
-    
-    
+import ipywidgets as widgets
+import pandas as pd
+from time import sleep
+
+
+
+def search():
+    Authors = widgets.Text(description='Authors', continuous_update=False, layout=widgets.Layout(width='30%'))
+    Year = widgets.Text(description='Year', continuous_update=False, layout=widgets.Layout(width='140px'))
+    Title = widgets.Text(description='Title', continuous_update=False, layout=widgets.Layout(width='30%'))
+    Select = widgets.Text(description='Select', continuous_update=False, layout=widgets.Layout(width='140px'))
+
+    def f(authors, year, title, select):
+        df = pd.DataFrame(dict(ID=['10110:/asdfk.sd2421']*5, Authors=[authors]*5, Year=[year]*5, Title=[title]*5))
+        df.set_index(df.index+1, inplace=True)
+        if not select:
+            with pd.option_context('display.max_colwidth', 100):
+                left_aligned_df = df.style.set_properties(**{'text-align': 'left'})
+                left_aligned_df = left_aligned_df.set_table_styles(
+                [dict(selector = 'th', props=[('text-align', 'left')])])
+
+                display(left_aligned_df)
+        else:
+            idx = list(map(int, select.split()))
+            print('produce citation markdown for:', df.loc[idx])
+            df.loc[idx].to_clipboard(index=False, header=False)
+            print('selected bibtex entry copied to clipboard')
+            out.close()
+            clear_output()            
+            return "THIS IS A BIBTEX ENTRY"            
+
+    out = widgets.interactive_output(f, {'authors': Authors, 'year': Year, 'title': Title, 'select': Select})
+
+
+    from IPython.display import clear_output
+    print('Loading refernce database... (this is only done once)')
+
+    import json
+    # with open('/Users/kmt/Desktop/jupyter-references/readcube.json') as f:
+    #     ref_db = json.load(f)['items']
+    # ref_db[:1]
+
+    sleep(1)
+    clear_output()
+
+    # widgets.VBox([widgets.VBox([Authors, Year, Title]), out])
+    display(widgets.VBox([widgets.HBox([Authors, Year, Title, Select]), out]))
+
+search()
