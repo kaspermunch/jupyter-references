@@ -53,6 +53,72 @@ def cite(cb=None):
     else:
         print('clipboard is not bibtex:', cb)
         
+
+##########################
+
+import nbformat
+import ipynbname
+import hashlib
+import IPython
+import ipylab
+from IPython.display import Javascript
+import time
+import re
+
+def save_notebook(file_path):
+    start_md5 = hashlib.md5(open(file_path,'rb').read()).hexdigest()
+    display(Javascript('IPython.notebook.save_checkpoint();'))
+    current_md5 = start_md5
+    
+    while start_md5 == current_md5:
+        time.sleep(1)
+        current_md5 = hashlib.md5(open(file_path,'rb').read()).hexdigest()
+
+def get_notebook_cells(notebook_path=None, cell_types=["markdown", "code", "raw"]):
+    if not notebook_path:
+        ip = get_ipython()
+        if '__vsc_ipynb_file__' in ip.user_ns:
+            notebook_path = ip.user_ns['__vsc_ipynb_file__']
+        else:
+            notebook_path = ipynbname.path()
+
+    # save_notebook(notebook_path)
+    # app = ipylab.JupyterFrontEnd()
+    # app.commands.execute('docmanager:save')
+    
+    with open(notebook_path, "r", encoding="utf-8") as rf:
+        nb = nbformat.read(rf, as_version=4)
+
+    cells = [cell for i, cell in enumerate(nb.cells) if cell["cell_type"] in cell_types]
+    return cells
+
+
+def get_cell_source():
+    cell_id = get_ipython().get_parent()["metadata"]["cellId"]
+    cells = get_notebook_cells()
+    for idx, cell in enumerate(cells):
+        if cell["id"] == cell_id:
+            return cell['source']
+
+def format_ref():
+    cell_content = get_cell_source()
+    return re.sub(r'ref\([^)]*\)', 'REF', cell_content)
+
+# # ref()
+
+# print(format_ref())
+
+# TODO: %cite and %incite should be custum line magics:
+
+# bla bla bla bla
+# %cite <bibtex entry> or else read from clipboard
+# bla bla bla bla
+
+
+
+##########################
+
+
 def incite(cb=None):
     if cb is None:
         cb = clipboard.osx_clipboard_get()
